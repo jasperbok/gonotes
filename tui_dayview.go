@@ -36,6 +36,10 @@ func (dv DayView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return dv, tea.Quit
+		case "left", "h":
+			return dv.GoToPreviousDay(), nil
+		case "right", "l":
+			return dv.GoToNextDay(), nil
 		}
 	}
 
@@ -47,6 +51,29 @@ func (dv DayView) View() string {
 	s = fmt.Sprintf("%s%s\n", s, dv.Content)
 	return s
 }
+
+func (dv DayView) GoToDate(date time.Time) DayView {
+	dv.Date = date
+
+	msg := getContentsForDate(date)()
+	switch msg := msg.(type) {
+	case ErrMsg:
+		dv.Content = msg.err.Error()
+	case FileLoadedMsg:
+		dv.Content = msg.content
+	}
+
+	return dv
+}
+
+func (dv DayView) GoToPreviousDay() DayView {
+	yesterday := dv.Date.Add(time.Hour * 24 * -1)
+	return dv.GoToDate(yesterday)
+}
+
+func (dv DayView) GoToNextDay() DayView {
+	tomorrow := dv.Date.Add(time.Hour * 24)
+	return dv.GoToDate(tomorrow)
 }
 
 type ErrMsg struct {
