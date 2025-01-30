@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -37,12 +38,22 @@ func (dv DayView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		dv.Content = msg.err.Error()
 	case FileLoadedMsg:
 		dv.Content = msg.content
+	case EditorFinishedMsg:
+		if msg.err != nil {
+			return dv, tea.Quit
+		}
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, DefaultDayViewKeyMap.Quit):
 			return dv, tea.Quit
 		case key.Matches(msg, DefaultDayViewKeyMap.Prev):
 			return dv.GoToPreviousDay(), nil
+		case key.Matches(msg, DefaultDayViewKeyMap.Edit):
+			filePath, err := dv.FilePath()
+			if err != nil {
+				return dv, tea.Quit
+			}
+			return dv, openEditor(filePath)
 		case key.Matches(msg, DefaultDayViewKeyMap.Next):
 			return dv.GoToNextDay(), nil
 		}
@@ -56,6 +67,15 @@ func (dv DayView) View() string {
 	s = fmt.Sprintf("%s%s\n", s, dv.Content)
 	s = fmt.Sprintf("%s\n\n%s\n", s, dv.help.View(DefaultDayViewKeyMap))
 	return s
+}
+
+// FilePath returns the absolute path to the markdown file for DayView's Date.
+func (dv DayView) FilePath() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s/gonotes/%s.md", homeDir, dv.Date.Format("2006-01-02")), nil
 }
 
 func (dv DayView) GoToDate(date time.Time) DayView {
@@ -90,6 +110,10 @@ type FileLoadedMsg struct {
 	content string
 }
 
+type EditorFinishedMsg struct {
+	err error
+}
+
 func getContentsForDate(date time.Time) tea.Cmd {
 	return func() tea.Msg {
 		homeDir, err := os.UserHomeDir()
@@ -122,6 +146,17 @@ func getContentsForDate(date time.Time) tea.Cmd {
 
 		return FileLoadedMsg{string(content)}
 	}
+}
+
+func openEditor(filePath string) tea.Cmd {
+	editor := os.Getenv("EDITOR")
+	if editor == "" {
+		editor = "vim"
+	}
+	c := exec.Command(editor, filePath)
+	return tea.ExecProcess(c, func(err error) tea.Msg {
+		return EditorFinishedMsg{err}
+	})
 }
 
 type DayViewKeyMap struct {
