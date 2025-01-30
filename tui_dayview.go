@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -15,12 +16,14 @@ import (
 type DayView struct {
 	Date    time.Time
 	Content string
+	help    help.Model
 }
 
 func initialDayView() DayView {
 	return DayView{
 		Date:    time.Now(),
 		Content: time.Now().Format("2006-01-02"),
+		help:    help.New(),
 	}
 }
 
@@ -51,6 +54,7 @@ func (dv DayView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (dv DayView) View() string {
 	s := fmt.Sprintf("\n# %s\n\n", dv.Date.Format("2006-01-02"))
 	s = fmt.Sprintf("%s%s\n", s, dv.Content)
+	s = fmt.Sprintf("%s\n\n%s\n", s, dv.help.View(DefaultDayViewKeyMap))
 	return s
 }
 
@@ -124,6 +128,16 @@ type DayViewKeyMap struct {
 	Next key.Binding
 	Prev key.Binding
 	Quit key.Binding
+}
+
+func (k DayViewKeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Prev, k.Next, k.Quit}
+}
+
+func (k DayViewKeyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Prev, k.Next, k.Quit},
+	}
 }
 
 var DefaultDayViewKeyMap = DayViewKeyMap{
