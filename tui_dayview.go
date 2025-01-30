@@ -42,6 +42,7 @@ func (dv DayView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.err != nil {
 			return dv, tea.Quit
 		}
+		dv.ReloadContents()
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, DefaultDayViewKeyMap.Quit):
@@ -76,6 +77,17 @@ func (dv DayView) FilePath() (string, error) {
 		return "", err
 	}
 	return fmt.Sprintf("%s/gonotes/%s.md", homeDir, dv.Date.Format("2006-01-02")), nil
+}
+
+// ReloadContents re-reads the DayView's contents from disk.
+func (dv *DayView) ReloadContents() {
+	msg := getContentsForDate(dv.Date)()
+	switch msg := msg.(type) {
+	case ErrMsg:
+		dv.Content = msg.err.Error()
+	case FileLoadedMsg:
+		dv.Content = msg.content
+	}
 }
 
 func (dv DayView) GoToDate(date time.Time) DayView {
