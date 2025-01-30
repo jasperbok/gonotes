@@ -127,16 +127,17 @@ func getContentsForDate(date time.Time) tea.Cmd {
 type DayViewKeyMap struct {
 	Next key.Binding
 	Prev key.Binding
+	Edit key.Binding
 	Quit key.Binding
 }
 
 func (k DayViewKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Prev, k.Next, k.Quit}
+	return []key.Binding{k.Prev, k.Next, k.Edit, k.Quit}
 }
 
 func (k DayViewKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Prev, k.Next, k.Quit},
+		{k.Prev, k.Next, k.Edit, k.Quit},
 	}
 }
 
@@ -148,6 +149,10 @@ var DefaultDayViewKeyMap = DayViewKeyMap{
 	Prev: key.NewBinding(
 		key.WithKeys("left", "h"),
 		key.WithHelp("h", "prev day"),
+	),
+	Edit: key.NewBinding(
+		key.WithKeys("e"),
+		key.WithHelp("e", "edit"),
 	),
 	Quit: key.NewBinding(
 		key.WithKeys("ctrl+c", "q"),
