@@ -43,7 +43,10 @@ func (dv DayView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (dv DayView) View() string {
-	return fmt.Sprintf("%s\n", dv.Content)
+	s := fmt.Sprintf("\n# %s\n\n", dv.Date.Format("2006-01-02"))
+	s = fmt.Sprintf("%s%s\n", s, dv.Content)
+	return s
+}
 }
 
 type ErrMsg struct {
