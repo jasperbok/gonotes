@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/charmbracelet/bubbles/key"
+
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -33,12 +35,12 @@ func (dv DayView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case FileLoadedMsg:
 		dv.Content = msg.content
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "q":
+		switch {
+		case key.Matches(msg, DefaultDayViewKeyMap.Quit):
 			return dv, tea.Quit
-		case "left", "h":
+		case key.Matches(msg, DefaultDayViewKeyMap.Prev):
 			return dv.GoToPreviousDay(), nil
-		case "right", "l":
+		case key.Matches(msg, DefaultDayViewKeyMap.Next):
 			return dv.GoToNextDay(), nil
 		}
 	}
@@ -116,4 +118,25 @@ func getContentsForDate(date time.Time) tea.Cmd {
 
 		return FileLoadedMsg{string(content)}
 	}
+}
+
+type DayViewKeyMap struct {
+	Next key.Binding
+	Prev key.Binding
+	Quit key.Binding
+}
+
+var DefaultDayViewKeyMap = DayViewKeyMap{
+	Next: key.NewBinding(
+		key.WithKeys("right", "l"),
+		key.WithHelp("l", "next day"),
+	),
+	Prev: key.NewBinding(
+		key.WithKeys("left", "h"),
+		key.WithHelp("h", "prev day"),
+	),
+	Quit: key.NewBinding(
+		key.WithKeys("ctrl+c", "q"),
+		key.WithHelp("q", "quit"),
+	),
 }
