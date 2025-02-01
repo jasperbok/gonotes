@@ -10,6 +10,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/glamour"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -65,7 +66,13 @@ func (dv DayView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (dv DayView) View() string {
 	s := fmt.Sprintf("\n# %s\n\n", dv.Date.Format("2006-01-02"))
-	s = fmt.Sprintf("%s%s\n", s, dv.Content)
+
+	contents, err := glamour.Render(dv.Content, "dark")
+	if err != nil {
+		s = fmt.Sprintf("%s%s\n", s, err.Error())
+	} else {
+		s = fmt.Sprintf("%s%s\n", s, contents)
+	}
 	s = fmt.Sprintf("%s\n\n%s\n", s, dv.help.View(DefaultDayViewKeyMap))
 	return s
 }
