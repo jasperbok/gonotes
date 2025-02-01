@@ -6,11 +6,13 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/glamour"
+	"github.com/charmbracelet/lipgloss"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -62,6 +64,7 @@ func (dv DayView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case tea.WindowSizeMsg:
 		dv.width = msg.Width
+		dv.help.Width = msg.Width
 	}
 
 	return dv, nil
@@ -77,7 +80,14 @@ func (dv DayView) View() string {
 	} else {
 		s = fmt.Sprintf("%s%s\n", s, contents)
 	}
-	s = fmt.Sprintf("%s\n\n%s\n", s, dv.help.View(DefaultDayViewKeyMap))
+
+	// Render the help text centered.
+	helpText := dv.help.View(DefaultDayViewKeyMap)
+	helpTextLines := strings.Split(helpText, "\n")
+	for _, line := range helpTextLines {
+		s = s + "\n" + lipgloss.NewStyle().Width(dv.width).Align(lipgloss.Center).Render(line) + "\n"
+	}
+
 	return s
 }
 
