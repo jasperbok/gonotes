@@ -19,6 +19,7 @@ type DayView struct {
 	Date    time.Time
 	Content string
 	help    help.Model
+	width   int
 }
 
 func initialDayView() DayView {
@@ -59,13 +60,16 @@ func (dv DayView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, DefaultDayViewKeyMap.Next):
 			return dv.GoToNextDay(), nil
 		}
+	case tea.WindowSizeMsg:
+		dv.width = msg.Width
 	}
 
 	return dv, nil
 }
 
 func (dv DayView) View() string {
-	s := fmt.Sprintf("\n# %s\n\n", dv.Date.Format("2006-01-02"))
+	dateStr := fmt.Sprintf("•• %s ••", dv.Date.Format("2006-01-02"))
+	s := ContentHeaderStyle.Width(dv.width).Render(dateStr)
 
 	contents, err := glamour.Render(dv.Content, "dark")
 	if err != nil {
