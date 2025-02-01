@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	p := tea.NewProgram(initialDayView())
+	p := tea.NewProgram(initialDayView(), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("The following error occured: %v\n", err)
 		os.Exit(1)
