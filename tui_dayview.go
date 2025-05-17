@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -97,7 +96,7 @@ func (dv DayView) FilePath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("%s/gonotes/%s.md", homeDir, dv.Date.Format("2006-01-02")), nil
+	return fmt.Sprintf("%s/Sync/Obsidian/Kennisbank/Fluxlog/%s.md", homeDir, dv.Date.Format("2006-01-02")), nil
 }
 
 // ReloadContents re-reads the DayView's contents from disk.
@@ -149,13 +148,8 @@ type EditorFinishedMsg struct {
 
 func getContentsForDate(date time.Time) tea.Cmd {
 	return func() tea.Msg {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return ErrMsg{err}
-		}
-
-		filename := fmt.Sprintf("%s/gonotes/%s.md", homeDir, date.Format("2006-01-02"))
-		filePath, err := filepath.Abs(filename)
+		dv := DayView{Date: date}
+		filePath, err := dv.FilePath()
 		if err != nil {
 			return ErrMsg{err}
 		}
