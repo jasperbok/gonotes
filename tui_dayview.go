@@ -60,6 +60,9 @@ func (dv DayView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return dv, openEditor(filePath)
 		case key.Matches(msg, DefaultDayViewKeyMap.Next):
 			return dv.GoToNextDay(), nil
+		case key.Matches(msg, DefaultDayViewKeyMap.Today):
+			now := time.Now()
+			return dv.GoToDate(now), nil
 		}
 	case tea.WindowSizeMsg:
 		dv.width = msg.Width
@@ -187,19 +190,20 @@ func openEditor(filePath string) tea.Cmd {
 }
 
 type DayViewKeyMap struct {
-	Next key.Binding
-	Prev key.Binding
-	Edit key.Binding
-	Quit key.Binding
+	Next  key.Binding
+	Prev  key.Binding
+	Today key.Binding
+	Edit  key.Binding
+	Quit  key.Binding
 }
 
 func (k DayViewKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Prev, k.Next, k.Edit, k.Quit}
+	return []key.Binding{k.Prev, k.Next, k.Today, k.Edit, k.Quit}
 }
 
 func (k DayViewKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Prev, k.Next, k.Edit, k.Quit},
+		{k.Prev, k.Next, k.Today, k.Edit, k.Quit},
 	}
 }
 
@@ -211,6 +215,10 @@ var DefaultDayViewKeyMap = DayViewKeyMap{
 	Prev: key.NewBinding(
 		key.WithKeys("left", "h"),
 		key.WithHelp("h", "prev day"),
+	),
+	Today: key.NewBinding(
+		key.WithKeys("t"),
+		key.WithHelp("t", "today"),
 	),
 	Edit: key.NewBinding(
 		key.WithKeys("e"),
